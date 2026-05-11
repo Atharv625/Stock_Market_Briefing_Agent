@@ -1,0 +1,62 @@
+service: ai-stock-market-intelligence-agent
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: python3.12
+  region: ${env:AWS_REGION, 'ap-south-1'}
+  memorySize: 1024
+  timeout: 120
+  logRetentionInDays: 14
+  environment:
+    GOOGLE_GEMINI_API_KEY: ${env:GOOGLE_GEMINI_API_KEY, ''}
+    GEMINI_MODEL: ${env:GEMINI_MODEL, 'gemini-2.5-flash'}
+    TELEGRAM_BOT_TOKEN: ${env:TELEGRAM_BOT_TOKEN, ''}
+    TELEGRAM_CHAT_ID: ${env:TELEGRAM_CHAT_ID, ''}
+    FINNHUB_API_KEY: ${env:FINNHUB_API_KEY, ''}
+    ALPHA_VANTAGE_API_KEY: ${env:ALPHA_VANTAGE_API_KEY, ''}
+    ENABLE_DYNAMODB: ${env:ENABLE_DYNAMODB, 'false'}
+    ENABLE_S3_CACHE: ${env:ENABLE_S3_CACHE, 'false'}
+    DYNAMODB_MARKET_TABLE: ${env:DYNAMODB_MARKET_TABLE, 'stock-agent-market-data'}
+    DYNAMODB_NEWS_TABLE: ${env:DYNAMODB_NEWS_TABLE, 'stock-agent-news-items'}
+    DYNAMODB_EARNINGS_TABLE: ${env:DYNAMODB_EARNINGS_TABLE, 'stock-agent-earnings-reports'}
+    DYNAMODB_REPORTS_TABLE: ${env:DYNAMODB_REPORTS_TABLE, 'stock-agent-generated-reports'}
+    DYNAMODB_SENTIMENT_TABLE: ${env:DYNAMODB_SENTIMENT_TABLE, 'stock-agent-sentiment-history'}
+    S3_CACHE_BUCKET: ${env:S3_CACHE_BUCKET, 'stock-agent-cache'}
+
+functions:
+  api:
+    handler: src/lambda_api.handler
+    events:
+      - httpApi:
+          path: /{proxy+}
+          method: ANY
+      - httpApi:
+          path: /
+          method: ANY
+  preMarket:
+    handler: src/scheduler/lambda_handlers.pre_market_handler
+    events:
+      - schedule:
+          rate: cron(30 2 ? * MON-FRI *)
+          enabled: true
+  midday:
+    handler: src/scheduler/lambda_handlers.midday_handler
+    events:
+      - schedule:
+          rate: cron(30 7 ? * MON-FRI *)
+          enabled: true
+  closing:
+    handler: src/scheduler/lambda_handlers.closing_handler
+    events:
+      - schedule:
+          rate: cron(30 10 ? * MON-FRI *)
+          enabled: true
+  deepAnalysis:
+    handler: src/scheduler/lambda_handlers.deep_analysis_handler
+    events:
+      - schedule:
+          rate: cron(30 14 ? * MON-FRI *)
+          enabled: true
+
+plugins: []

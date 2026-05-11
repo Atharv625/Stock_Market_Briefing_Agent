@@ -1,0 +1,28 @@
+{
+  "schedules": [
+    {
+      "name": "stock-agent-pre-market",
+      "cron_utc": "cron(30 2 ? * MON-FRI *)",
+      "local_time_ist": "08:00",
+      "report_type": "pre_market"
+    },
+    {
+      "name": "stock-agent-midday",
+      "cron_utc": "cron(30 7 ? * MON-FRI *)",
+      "local_time_ist": "13:00",
+      "report_type": "midday"
+    },
+    {
+      "name": "stock-agent-closing",
+      "cron_utc": "cron(30 10 ? * MON-FRI *)",
+      "local_time_ist": "16:00",
+      "report_type": "closing"
+    },
+    {
+      "name": "stock-agent-deep-analysis",
+      "cron_utc": "cron(30 14 ? * MON-FRI *)",
+      "local_time_ist": "20:00",
+      "report_type": "deep_analysis"
+    }
+  ]
+}
